@@ -31,9 +31,18 @@ def nextState(oldState, mov, di):
     return newState
     
     
-def canMove(state, mov, di):
-    
-    
+def canMove(state, move, die):
+    currentState = state.pointLists
+    destination = move + die
+    return isOpen(currentState, destination)
+
+def isOpen(state, location):
+    destination = state.pointLists[location]
+    if state.whose_move == W:
+        return destination[0] != R or len(destination) < 2
+    else:
+        return destination[0] != W or len(destination) < 2
+
 
 def staticEval(state):
     bar = state.bar
