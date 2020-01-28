@@ -5,25 +5,26 @@
 from backgState import *
 
 W = 0; R = 1
+OUR_COLOR = W
 
 def move(state, die1, die2):
+    OUR_COLOR = state.whose_move
     
-    
-    
-def nextState(oldState, mov1, di1, mov2, di2):
+# Assumes move is valid
+def nextState(oldState, mov, di):
+    bar = oldState.bar.copy()
     points = oldState.pointLists.copy()
     newState = bgstate(old = oldState)
-    points[mov1-1].remove(oldState.whose_move)
-    points[mov2-1].remove(oldState.whose_move)
-    
-    if (oldState.whose_move == W):
-        points[mov1-1-di1].append(oldState.whose_move)
-        points[mov2-1-di2].append(oldState.whose_move)
-        newState.whose_move = R
+    points[mov-1].remove(oldState.whose_move)
+    if (mov != 0):
+        if (oldState.whose_move == W):
+            points[mov-1-di].append(oldState.whose_move)
+            newState.whose_move = R
+        else:
+            points[mov-1+di].append(oldState.whose_move)
+            newState.whose_move = W
     else:
-        points[mov1-1+di1].append(oldState.whose_move)
-        points[mov2-1+di2].append(oldState.whose_move)
-        newState.whose_move = W
+        bar.remove(oldState.whose_move)
     
     newState.pointLists = points
     
@@ -35,4 +36,19 @@ def canMove(state, mov, di):
     
 
 def staticEval(state):
+    bar = state.bar
+    points = state.pointLists
+    rscore = 0
+    wscore = 0
+    for i, val in enumerate(points, 1):
+        wscore += val.count(W) * (24 - i)
+        rscore += val.count(r) * (i)
+        
+    rscore -= bar.count(R) * 20
+    wscore -= bar.count(W) * 20
+        
+    if OUR_COLOR == W: rscore *= -1
+    else: wscore *= -1
     
+    return rscore + wscore
+            
