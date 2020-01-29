@@ -3,32 +3,71 @@
 """
 
 from backgState import *
-
 from gameMaster import *
 
-OUR_COLOR = 0
+W = 0; R = 1
+OUR_COLOR = W
+
 STATE_TREE = []
 WHITE = 0
 RED = 1
 def move(state, die1, die2):
-
-
-
-def nextState(oldState, mov1, di1, mov2, di2):
+    global OUR_COLOR
+    OUR_COLOR = state.whose_move
+    mov1, mov2, r = search()
+    res = str(mov1) + "," + str(mov2)
+    if r: res.append(",R")
+    return res
+    
+def search():
+    mov1, mov2 = 0
+    R = False
+    # Search Algorithm
+    
+    return mov1, mov2, R
+    
+def nextState(oldState, mov, di):
+    # Assumes move is valid
+    if (mov in ["P", "p"]): return bgstate(old = oldState) # passing gives same state
+    bar = oldState.bar.copy()
     points = oldState.pointLists.copy()
+    roff = oldState.red_off.copy()
+    woff = oldState.white_off.copy()
     newState = bgstate(old = oldState)
-    points[mov1-1].remove(oldState.whose_move)
-    points[mov2-1].remove(oldState.whose_move)
-
-    if (oldState.whose_move == W):
-        points[mov1-1-di1].append(oldState.whose_move)
-        points[mov2-1-di2].append(oldState.whose_move)
-        newState.whose_move = R
+    if (mov != 0):
+        # moving from point
+        points[mov-1].remove(oldState.whose_move)
+        if (oldState.whose_move == W):
+            # white's move
+            if (R in points[mov-1-di]):
+                # hitting
+                points[mov-1-di].remove(R)
+                bar.append(R)
+            if mov-1-di >= 0: 
+                points[mov-1-di].append(oldState.whose_move)
+            else: # bearing off
+                woff.append(W)
+            newState.whose_move = R
+        else:
+            # red's move
+            if (W in points[mov-1+di]):
+                # hitting
+                points[mov-1+di].remove(W)
+                bar.append(W)
+            if mov-1+di <= 23:
+                points[mov-1+di].append(R)
+            else: # bearing off
+                roff.append(R)
+            newState.whose_move = W
     else:
-        points[mov1-1+di1].append(oldState.whose_move)
-        points[mov2-1+di2].append(oldState.whose_move)
-        newState.whose_move = W
-
+        # Remove from bar
+        bar.remove(oldState.whose_move)
+        if (oldState.whose_move == W): points[di-1].append(W)
+        else: points[24-di].append(R)
+    
+    newState.white_off = woff
+    newState.red_off = roff
+    newState.bar = bar
     newState.pointLists = points
 
     return newState
@@ -48,9 +87,36 @@ def isOpen(state, location):
     else:
         return destination[0] != W or len(destination) < 2
 
-
 def staticEval(state):
-    pass
+    bar = state.bar
+    points = state.pointLists
+    # score for each color based on position
+    rscore = 0
+    wscore = 0
+    # number of each color in board
+    rcount = 0
+    wcount = 0
+    
+    for i, val in enumerate(points, 1):
+        wscore += val.count(W) * (24 - i)
+        rscore += val.count(R) * (i)
+        wcount += val.count(W)
+        rcount += val.count(R)
+    
+    rcount += bar.count(R)
+    wcount += bar.count(W)
+    
+    rscore -= bar.count(R) * 20
+    wscore -= bar.count(W) * 20
+    
+    rscore += (15 - rcount) * 30
+    wscore += (15 - wcount) * 30
+    
+    if OUR_COLOR == W: rscore *= -1
+    else: wscore *= -1
+    
+    return rscore + wscore
+
 
 def buildStateTree(state, move):
     root = state
