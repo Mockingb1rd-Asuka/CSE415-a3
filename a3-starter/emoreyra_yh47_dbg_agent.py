@@ -6,19 +6,20 @@ from backgState import *
 
 from gameMaster import *
 
-OUR_COLOR = 0;
+OUR_COLOR = 0
 STATE_TREE = []
-
+WHITE = 0
+RED = 1
 def move(state, die1, die2):
-    
-    
-    
+
+
+
 def nextState(oldState, mov1, di1, mov2, di2):
     points = oldState.pointLists.copy()
     newState = bgstate(old = oldState)
     points[mov1-1].remove(oldState.whose_move)
     points[mov2-1].remove(oldState.whose_move)
-    
+
     if (oldState.whose_move == W):
         points[mov1-1-di1].append(oldState.whose_move)
         points[mov2-1-di2].append(oldState.whose_move)
@@ -27,12 +28,12 @@ def nextState(oldState, mov1, di1, mov2, di2):
         points[mov1-1+di1].append(oldState.whose_move)
         points[mov2-1+di2].append(oldState.whose_move)
         newState.whose_move = W
-    
+
     newState.pointLists = points
-    
+
     return newState
-    
-    
+
+
 def canMove(state, move, die):
     if gameMaster.any_on_bar(state, OUR_COLOR):
         return False
@@ -51,21 +52,17 @@ def isOpen(state, location):
 def staticEval(state):
     pass
 
-def buildDictionary(state):
-    currentState = state.pointLists
-    stateList = {}
-    if state.bar:
-        stateList[0] = [ state.bar[0], len(state.bar)]
-    for index, checkers in enumerate(currentState, 1):
-        if checkers:
-            stateList[index] = [checkers[index][0], len(checkers)]
-    return stateList
+def buildStateTree(state, move):
+    root = state
+    STATE_TREE = StateTree(state)
+    next_move = 1 - state.whose_move
+    for checkerPair
 
 class StateTree:
 
-    def __init__(self, state, state_dictionary):
-        self.state_list = state_dictionary
+    def __init__(self, state):
         self.state = state
+        self.state_list = self.build_dict
         self.children = []
 
     def __getstate__(self):
@@ -83,3 +80,12 @@ class StateTree:
     def del_multiple_child(self, start, end):
         del self.children[start:end]
 
+    def build_dict(self):
+        currentState = self.state.pointLists
+        stateList = {}
+        if self.state.bar:
+            stateList[0] = [self.state.bar[0], len(self.state.bar)]
+        for index, checkers in enumerate(currentState, 1):
+            if checkers:
+                stateList[index] = [checkers[index][0], len(checkers)]
+        return stateList
