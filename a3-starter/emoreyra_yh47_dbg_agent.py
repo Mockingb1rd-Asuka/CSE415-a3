@@ -3,9 +3,11 @@
 """
 
 from backgState import *
+from gameMaster import *
 
 W = 0; R = 1
 OUR_COLOR = W
+STATE_TREE = []
 
 def move(state, die1, die2):
     global OUR_COLOR
@@ -71,6 +73,8 @@ def nextState(oldState, mov, di):
     
     
 def canMove(state, move, die):
+    if gameMaster.any_on_bar(state, OUR_COLOR):
+        return False
     currentState = state.pointLists
     destination = move + die
     return isOpen(currentState, destination)
@@ -83,6 +87,7 @@ def isOpen(state, location):
         return destination[0] != W or len(destination) < 2
 
 def staticEval(state):
+<<<<<<< HEAD
     bar = state.bar
     points = state.pointLists
     # score for each color based on position
@@ -112,3 +117,39 @@ def staticEval(state):
     
     return rscore + wscore
             
+=======
+    pass
+
+def buildDictionary(state):
+    currentState = state.pointLists
+    stateList = {}
+    if state.bar:
+        stateList[0] = [ state.bar[0], len(state.bar)]
+    for index, checkers in enumerate(currentState, 1):
+        if checkers:
+            stateList[index] = [checkers[index][0], len(checkers)]
+    return stateList
+
+class StateTree:
+
+    def __init__(self, state, state_dictionary):
+        self.state_list = state_dictionary
+        self.state = state
+        self.children = []
+
+    def __getstate__(self):
+        return self.state
+
+    def get_children(self):
+        return self.children
+
+    def __add__(self, child):
+        self.children += child
+
+    def del_child(self, index):
+        self.children.pop(index)
+
+    def del_multiple_child(self, start, end):
+        del self.children[start:end]
+
+>>>>>>> d98c1e4d6774514bd9b4756fff6495dbeee2bbd3
