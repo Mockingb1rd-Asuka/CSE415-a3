@@ -4,7 +4,10 @@
 
 from backgState import *
 
-W = 0; R = 1
+from gameMaster import *
+
+OUR_COLOR = 0;
+STATE_TREE = []
 
 def move(state, die1, die2):
     
@@ -31,6 +34,8 @@ def nextState(oldState, mov1, di1, mov2, di2):
     
     
 def canMove(state, move, die):
+    if gameMaster.any_on_bar(state, OUR_COLOR):
+        return False
     currentState = state.pointLists
     destination = move + die
     return isOpen(currentState, destination)
@@ -44,4 +49,37 @@ def isOpen(state, location):
 
 
 def staticEval(state):
-    
+    pass
+
+def buildDictionary(state):
+    currentState = state.pointLists
+    stateList = {}
+    if state.bar:
+        stateList[0] = [ state.bar[0], len(state.bar)]
+    for index, checkers in enumerate(currentState, 1):
+        if checkers:
+            stateList[index] = [checkers[index][0], len(checkers)]
+    return stateList
+
+class StateTree:
+
+    def __init__(self, state, state_dictionary):
+        self.state_list = state_dictionary
+        self.state = state
+        self.children = []
+
+    def __getstate__(self):
+        return self.state
+
+    def get_children(self):
+        return self.children
+
+    def __add__(self, child):
+        self.children += child
+
+    def del_child(self, index):
+        self.children.pop(index)
+
+    def del_multiple_child(self, start, end):
+        del self.children[start:end]
+
