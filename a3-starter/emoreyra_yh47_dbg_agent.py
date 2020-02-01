@@ -22,14 +22,23 @@ def move(state, die1, die2):
 
 def search(state, dice):
     mov1, mov2 = 0
-    R = False
+    r = False
     # Search Algorithm
     succs = successors(state)
+    val = -10000000
+    movesDice = (1, 6)
+    bestmove = ("p")
     for i in range(5, 1):
         for s in succs:
-            minimax(s[0],i)
-    
-    return mov1, mov2, R
+            tempval = minimax(s[0],i)
+            if (tempval > val):
+                val = tempval
+                r = movesDice[0] == dice [0]
+                movesDice = s[1]
+                bestmove = s[2]
+    mov1 = bestmove[0]
+    mov2 = bestmove[1]
+    return mov1, mov2, r
 
 
 def minimax(state, depth, alpha_beta_pair):
@@ -49,15 +58,17 @@ def successors(state):
     intList = []
     moves = availableMoveSet(state, [1, 6])
     
-    for key in moves.keys():
-        for move in moves.get(key):
-            intList.append((nextState(state, move, key, False), key))
+    for di in moves.keys():
+        for move in moves.get(di):
+            intList.append([nextState(state, move, di, False), di, move])
     
     for intState in intList:
         otherRoll = moves.keys().remove(intState[1])
         moves = availableMoveSet(intState, [otherRoll])
         for di in moves.keys():
-            re.append((nextState(intState[0], moves.get(di), di, True), (intState[1], otherRoll)))
+            for mov in moves.get(di):
+                re.append([nextState(intState[0], moves.get(di), di, True),
+                       (intState[1], otherRoll), (intState[2], mov)])
     
     return re
 
@@ -71,26 +82,26 @@ def nextState(oldState, mov, di, endturn):
     newState = bgstate(old=oldState)
     if (mov != 0):
         # moving from point
-        points[mov - 1].remove(oldState.whose_move)
+        points[mov].remove(oldState.whose_move)
         if (color == W):
             # white's move
-            if (R in points[mov - 1 - di]):
+            if (R in points[mov - di]):
                 # hitting
-                points[mov - 1 - di].remove(R)
+                points[mov - di].remove(R)
                 bar.append(R)
             if mov - 1 - di >= 0:
-                points[mov - 1 - di].append(oldState.whose_move)
+                points[mov - di].append(oldState.whose_move)
             else:  # bearing off
                 woff.append(W)
             newState.whose_move = R
         else:
             # red's move
-            if (W in points[mov - 1 + di]):
+            if (W in points[mov + di]):
                 # hitting
-                points[mov - 1 + di].remove(W)
+                points[mov + di].remove(W)
                 bar.append(W)
-            if mov - 1 + di <= 23:
-                points[mov - 1 + di].append(R)
+            if mov + di <= 23:
+                points[mov + di].append(R)
             else:  # bearing off
                 roff.append(R)
             newState.whose_move = W
