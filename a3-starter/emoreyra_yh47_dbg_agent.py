@@ -110,7 +110,7 @@ def nextState(oldState, mov, di, endturn):
 
 
 def canMove(state, index, die):
-    if any_on_bar(state, state.whose_move):
+    if any_on_bar(state, state.whose_move) and index != 0:
         return False
     if canBearOff(state):
         return True
