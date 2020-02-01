@@ -112,15 +112,15 @@ def nextState(oldState, mov, di, endturn):
 
 def canMove(state, index, die):
     checker_list = state.pointLists
-    if not checker_list[index - 1] or checker_list[index - 1][0] != state.whose_move:
-        return False
     if any_on_bar(state, state.whose_move) and index != 0:
+        return False
+    index -= 1
+    if not checker_list[index]:
         return False
     if canBearOff(state):
         return True
-    current_list = state.pointLists
     destination = index + die
-    return isOpen(current_list, destination)
+    return isOpen(state, destination)
 
 
 def availableMoveSet(state, dice):
@@ -135,8 +135,14 @@ def availableMoveSet(state, dice):
 
 
 def isOpen(state, location):
-    destination = state.pointLists[location]
-    if state.whose_move == W:
+    checker_lists = state.pointLists
+    if location > len(checker_lists):
+        return False
+    print(len(checker_lists))
+    destination = checker_lists[location]
+    if not destination:
+        return True
+    elif state.whose_move == W:
         return destination[0] != R or len(destination) < 2
     else:
         return destination[0] != W or len(destination) < 2
@@ -144,19 +150,15 @@ def isOpen(state, location):
 
 def canBearOff(state):
     checker_position = state.pointLists
-    home_range = homeRange(state)
+    if state.whose_move == W:
+        home_range = range(6, 24)
+    else:
+        home_range = range(0, 18)
     for index in home_range:
-        if checker_position[index][0] == state.whose_move:
+        if checker_position[index] and checker_position[index][0] == state.whose_move:
             return False
     return True
 
-
-def homeRange(state):
-    if state.whose_move == W:
-        home_range = range(7, 25)
-    else:
-        home_range = range(1, 19)
-    return home_range
 
 
 
