@@ -46,7 +46,7 @@ def minimax(state, depth, alpha_beta_pair):
 def successors(state):
     re = []
     intList = []
-    moves = {}
+    moves = availableMoveSet(state)
     
     for key in moves.keys():
         for move in moves.get(key):
@@ -110,6 +110,9 @@ def nextState(oldState, mov, di, endturn):
 
 
 def canMove(state, index, die):
+    checker_list = state.pointLists
+    if not checker_list[index - 1]:
+        return False
     if any_on_bar(state, state.whose_move) and index != 0:
         return False
     if canBearOff(state):
@@ -184,8 +187,6 @@ def staticEval(state):
         wscore *= -1
 
     return rscore + wscore
-
-    pass
 
 
 class StateTree:
