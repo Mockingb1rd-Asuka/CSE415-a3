@@ -26,7 +26,7 @@ def search():
     
     return mov1, mov2, R
     
-def nextState(oldState, mov, di):
+def nextState(oldState, mov, di, endturn):
     # Assumes move is valid
     if (mov in ["P", "p"]): return bgstate(old = oldState) # passing gives same state
     bar = oldState.bar.copy()
@@ -62,6 +62,8 @@ def nextState(oldState, mov, di):
     else:
         # Remove from bar
         bar.remove(oldState.whose_move)
+        
+    if (endturn):
         if (oldState.whose_move == W): points[di-1].append(W)
         else: points[24-di].append(R)
     
