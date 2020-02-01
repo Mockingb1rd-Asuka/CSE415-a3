@@ -1,4 +1,4 @@
-'''gameMasterV03.py
+'''gameMasterV04.py
 
 A simple game master program for Simplified Backgammon.
 
@@ -51,6 +51,12 @@ a piece from a point; that's illegal and now ends the game.
 Jan 17, 2020. "Deterministic" feature added that forces dice to specific
 outcomes.  This is useful in terms of allowing alpha-beta pruning to
 make sense.
+
+Status as of Jan. 28, 2020 (version 04)
+ Adding a feature in deterministic mode that checks for 3 passes in
+a row (no changes to the state except change of whose turn 3 times).
+If this happens, the game is terminated and declared to be a tie.
+
 '''
 
 import BackMan as agent1
@@ -82,8 +88,10 @@ def run(agent1, agent2, max_secs_per_move, initial_state=bgstate(), deterministi
   fixed values (1, 6) come back.  This allows a variation of the game
   in which alpha-beta pruning makes sense.
   '''
-  print("The Simplified Backgammon Game-master (V03) says: Welcome!")
+  print("The Simplified Backgammon Game-master (V04) says: Welcome!")
   global DONE
+  pass_count = 0 # Number of consecutive (full) passes. If 3, 
+                 # and in deterministic mode, the game ends.
   current_state = initial_state
   while(not DONE):
     print("Current state:")
@@ -115,8 +123,13 @@ def run(agent1, agent2, max_secs_per_move, initial_state=bgstate(), deterministi
         new_state = bgstate(current_state)
         new_state.whose_move=1-whose_move
         current_state = new_state
+        pass_count += 1
+        if deterministic and pass_count == 3:
+          tie()
+          break
         continue
     else:
+      pass_count = 0 # Resetting count of consecutive full passes.
       try:
         move_list = move.split(',')
         if len(move_list)==3 and move_list[2] in ['R','r']:
@@ -253,6 +266,11 @@ def bear_off(state, src_pt, dest_pt, who):
 def forfeit(who):
   global DONE
   print("Player "+get_color(who)+" forfeits the game and loses.")
+  DONE = True
+
+def tie():
+  global DONE
+  print("The players have chosen to pass, pass, and pass again. The game is a draw.")
   DONE = True
 
 def moves_exist(state, die1, die2, who):
