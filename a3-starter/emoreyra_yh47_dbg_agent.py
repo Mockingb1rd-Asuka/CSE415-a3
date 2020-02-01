@@ -85,16 +85,14 @@ def canMove(state, index, die):
     return isOpen(current_list, destination)
 
 
-def availableMoveSet(state):
+def availableMoveSet(state, dice):
     moveset_available = {}
     color = state.whose_move
     checkers_list = state.pointLists
-    for index, checkers in enumerate(checkers_list):
-        if checkers and checkers[0] == color:
-            if canMove(state, index, 1):
-                moveset_available[1] += [index]
-            if canMove(state, index, 6):
-                moveset_available[6] += [index]
+    for index, checkers in enumerate(checkers_list, 1):
+        for number in dice:
+            if canMove(state, index, number):
+                moveset_available[number] += [index]
     return moveset_available
 
 
