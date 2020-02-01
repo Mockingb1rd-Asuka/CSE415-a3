@@ -85,7 +85,7 @@ def canMove(state, move, die):
     return isOpen(currentState, destination)
 
 
-def availableMoveList(state):
+def availableMoveSet(state):
     moveset_available = {}
     color = state.whose_move
     checkers_list = state.pointLists
