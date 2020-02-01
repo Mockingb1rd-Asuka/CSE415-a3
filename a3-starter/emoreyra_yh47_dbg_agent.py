@@ -146,7 +146,10 @@ def canBearOff(state):
     checker_position = state.pointLists
     home_range = homeRange(state)
     for index in home_range:
-        return checker_position[index][0] != state.whose_move
+        if checker_position[index][0] == state.whose_move:
+            return False
+    return True
+
 
 def homeRange(state):
     if state.whose_move == W:
