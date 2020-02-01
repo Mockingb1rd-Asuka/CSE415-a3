@@ -133,9 +133,9 @@ def availableMoveSet(state, dice):
 def isOpen(state, location):
     destination = state.pointLists[location]
     if state.whose_move == W:
-        return destination[0] != R and len(destination) < 2
+        return destination[0] != R or len(destination) < 2
     else:
-        return destination[0] != W and len(destination) < 2
+        return destination[0] != W or len(destination) < 2
 
 
 def canBearOff(state):
