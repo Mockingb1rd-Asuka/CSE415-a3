@@ -3,8 +3,9 @@
 """
 
 from backgState import *
-import numpy as np
+#import numpy as np
 from gameMaster import *
+import sys
 
 W = 0
 R = 1
@@ -43,8 +44,8 @@ def search(state, dice):
 
 def minimax(state, depth, alpha_beta_pair):
     if depth == 0: return staticEval(state)
-    if state.whose_move == OUR_COLOR: prov = -1000000
-    else: prov = 1000000
+    if state.whose_move == OUR_COLOR: prov = -sys.maxsize -1
+    else: prov = sys.maxsize
     succ = successors(state)
     for s in succ:
         newVal = minimax(s[0], depth - 1)
@@ -122,7 +123,10 @@ def nextState(oldState, mov, di, endturn):
 
 
 def canMove(state, index, die):
-    if any_on_bar(state, state.whose_move):
+    checker_list = state.pointLists
+    if not checker_list[index - 1]:
+        return False
+    if any_on_bar(state, state.whose_move) and index != 0:
         return False
     if canBearOff(state):
         return True
@@ -134,9 +138,9 @@ def canMove(state, index, die):
 def availableMoveSet(state, dice):
     moveset_available = {}
     checkers_list = state.pointLists
-    for index, checkers in enumerate(checkers_list, 1):
-        for number in dice:
-            moveset_available[number] = []
+    for number in dice:
+        moveset_available[number] = []
+        for index, checkers in enumerate(checkers_list, 1):
             if canMove(state, index, number):
                 moveset_available[number] += [index]
     return moveset_available
@@ -145,9 +149,9 @@ def availableMoveSet(state, dice):
 def isOpen(state, location):
     destination = state.pointLists[location]
     if state.whose_move == W:
-        return destination[0] != R and len(destination) < 2
+        return destination[0] != R or len(destination) < 2
     else:
-        return destination[0] != W and len(destination) < 2
+        return destination[0] != W or len(destination) < 2
 
 
 def canBearOff(state):
@@ -196,8 +200,6 @@ def staticEval(state):
         wscore *= -1
 
     return rscore + wscore
-
-    pass
 
 
 class StateTree:
