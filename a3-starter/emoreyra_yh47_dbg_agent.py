@@ -23,21 +23,22 @@ def move(state, die1, die2):
 def search(state, dice):
     mov1, mov2 = 0
     R = False
+    depth = 5
     # Search Algorithm
     succs = successors(state)
     for i in range(5, 1):
-        minimax(state, {},i)
+        minimax(state, availableMoveSet(state), depth, i)
     
     return mov1, mov2, R
 
 
-def minimax(state, depth, alpha_beta_pair):
+def minimax(state, moveset, depth, alpbeta_pair):
     if depth == 0: return staticEval(state)
     if state.whose_move == OUR_COLOR: prov = -1000000
     else: prov = 1000000
     succ = successors(state)
     for s in succ:
-        newVal = minimax(s, depth - 1)
+        newVal = minimax(s, depth - 1, alpbeta_pair)
         if ((state.whose_move == OUR_COLOR and newVal > prov) or
             (state.whose_move != OUR_COLOR and newVal < prov)):
             prov = newVal
@@ -111,7 +112,7 @@ def nextState(oldState, mov, di, endturn):
 
 def canMove(state, index, die):
     checker_list = state.pointLists
-    if not checker_list[index - 1]:
+    if not checker_list[index - 1] or checker_list[index - 1][0] != state.whose_move:
         return False
     if any_on_bar(state, state.whose_move) and index != 0:
         return False
