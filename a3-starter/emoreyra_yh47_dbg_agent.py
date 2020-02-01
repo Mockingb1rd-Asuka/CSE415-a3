@@ -4,13 +4,12 @@
 
 from backgState import *
 import numpy as np
+from gameMaster import *
 
 W = 0
 R = 1
 
 OUR_COLOR = W
-STATE_TREE = None
-
 
 def move(state, die1, die2):
     global OUR_COLOR
@@ -25,7 +24,7 @@ def search(state, dice):
     mov1, mov2 = 0
     R = False
     # Search Algorithm
-    
+    succs = successors(state)
     for i in range(5, 1):
         minimax(state, {},i)
     
@@ -37,7 +36,7 @@ def minimax(state, depth):
     else: prov = 1000000
     succ = successors(state)
     for s in succ:
-        newVal = minimax(s, [], depth - 1)
+        newVal = minimax(s, depth - 1)
         if ((state.whose_move == OUR_COLOR and newVal > prov) or
             (state.whose_move != OUR_COLOR and newVal < prov)):
             prov = newVal
@@ -109,12 +108,27 @@ def nextState(oldState, mov, di, endturn):
     return newState
 
 
-def canMove(state, move, die):
-    if OUR_COLOR in state.bar:
+def canMove(state, index, die):
+    if any_on_bar(state, state.whose_move):
         return False
-    currentState = state.pointLists
-    destination = move + die
-    return isOpen(currentState, destination)
+    if canBearOff(state):
+        return True
+    current_list = state.pointLists
+    destination = index + die
+    return isOpen(current_list, destination)
+
+
+def availableMoveSet(state):
+    moveset_available = {}
+    color = state.whose_move
+    checkers_list = state.pointLists
+    for index, checkers in enumerate(checkers_list):
+        if checkers and checkers[0] == color:
+            if canMove(state, index, 1):
+                moveset_available[1] += [index]
+            if canMove(state, index, 6):
+                moveset_available[6] += [index]
+    return moveset_available
 
 
 def isOpen(state, location):
@@ -123,6 +137,21 @@ def isOpen(state, location):
         return destination[0] != R or len(destination) < 2
     else:
         return destination[0] != W or len(destination) < 2
+
+
+def canBearOff(state):
+    checker_position = state.pointLists
+    home_range = homeRange(state)
+    for index in home_range:
+        return checker_position[index][0] != state.whose_move
+
+def homeRange(state):
+    if state.whose_move == W:
+        home_range = range(7, 25)
+    else:
+        home_range = range(1, 19)
+    return home_range
+
 
 
 def staticEval(state):
@@ -158,35 +187,6 @@ def staticEval(state):
     return rscore + wscore
 
     pass
-
-
-def buildStateTree(state, color):
-    global STATE_TREE
-    STATE_TREE = StateTree(state)
-    buildBranch(STATE_TREE, color, state, 1)
-
-
-def buildBranch(root, color, state, step):
-    checkers_available = build_dict(state)
-    if step == 1:
-        color = 1 - color  # changing color
-    if checkers_available:
-        for index, checkers in checkers_available.items():
-            new_state = nextState(state, index, step, color)
-            new_leaf = StateTree(new_state)
-            root.__add__(new_leaf)
-            buildBranch(new_leaf, color, new_state, 7 - step)  # waiving between 1 and 6
-
-
-def build_dict(state):
-    currentState = state.pointLists
-    stateDict = {}
-    if state.bar:
-        stateDict[0] = [state.bar[0], len(state.bar)]
-    for index, checkers in enumerate(currentState, 1):
-        if checkers:
-            stateDict[index] = [checkers[index][0], len(checkers)]
-    return stateDict
 
 
 class StateTree:
