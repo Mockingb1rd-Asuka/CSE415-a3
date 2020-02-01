@@ -87,7 +87,6 @@ def canMove(state, index, die):
 
 def availableMoveSet(state, dice):
     moveset_available = {}
-    color = state.whose_move
     checkers_list = state.pointLists
     for index, checkers in enumerate(checkers_list, 1):
         for number in dice:
