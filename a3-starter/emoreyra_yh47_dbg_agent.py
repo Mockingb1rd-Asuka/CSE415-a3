@@ -15,7 +15,7 @@ def move(state, die1, die2):
     OUR_COLOR = state.whose_move
     mov1, mov2, r = search()
     res = str(mov1) + "," + str(mov2)
-    if r: res.append(",R")
+    if r: res += ",R"
     return res
 
 
