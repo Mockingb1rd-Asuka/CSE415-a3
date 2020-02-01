@@ -138,8 +138,7 @@ def isOpen(state, location):
     checker_lists = state.pointLists
     if location > len(checker_lists):
         return False
-    print(len(checker_lists))
-    destination = checker_lists[location]
+    destination = checker_lists[location - 1]
     if not destination:
         return True
     elif state.whose_move == W:
