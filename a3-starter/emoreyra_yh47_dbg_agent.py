@@ -122,9 +122,9 @@ def canMove(state, index, die):
 def availableMoveSet(state, dice):
     moveset_available = {}
     checkers_list = state.pointLists
-    for index, checkers in enumerate(checkers_list, 1):
-        for number in dice:
-            moveset_available[number] = []
+    for number in dice:
+        moveset_available[number] = []
+        for index, checkers in enumerate(checkers_list, 1):
             if canMove(state, index, number):
                 moveset_available[number] += [index]
     return moveset_available
