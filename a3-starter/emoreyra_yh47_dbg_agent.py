@@ -3,7 +3,7 @@
 """
 
 from backgState import *
-#import numpy as np
+import numpy as np
 from gameMaster import *
 import sys
 
@@ -23,32 +23,24 @@ def move(state, die1, die2):
 
 def search(state, dice):
     mov1, mov2 = 0
-    r = False
+    R = False
+    depth = 5
     # Search Algorithm
-    succs = successors(state)
-    val = -10000000
-    movesDice = (1, 6)
-    bestmove = ("p")
     for i in range(5, 1):
-        for s in succs:
-            tempval = minimax(s[0],i)
-            if (tempval > val):
-                val = tempval
-                r = movesDice[0] == dice [0]
-                movesDice = s[1]
-                bestmove = s[2]
-    mov1 = bestmove[0]
-    mov2 = bestmove[1]
-    return mov1, mov2, r
+
+        minimax(state, availableMoveSet(state), depth, i)
+    
+    return mov1, mov2, R
 
 
-def minimax(state, depth, alpha_beta_pair):
+
+def minimax(state, moveset, depth, alpbeta_pair):
     if depth == 0: return staticEval(state)
     if state.whose_move == OUR_COLOR: prov = -sys.maxsize -1
     else: prov = sys.maxsize
     succ = successors(state)
     for s in succ:
-        newVal = minimax(s[0], depth - 1)
+        newVal = minimax(s, depth - 1, alpbeta_pair)
         if ((state.whose_move == OUR_COLOR and newVal > prov) or
             (state.whose_move != OUR_COLOR and newVal < prov)):
             prov = newVal
@@ -122,16 +114,16 @@ def nextState(oldState, mov, di, endturn):
     return newState
 
 
-def canMove(state, index, die):
+def canMove(state, move, die):
     checker_list = state.pointLists
-    if not checker_list[index - 1]:
+    if not checker_list[move - 1] or checker_list[move - 1][0] != state.whose_move:
         return False
-    if any_on_bar(state, state.whose_move) and index != 0:
+    if any_on_bar(state, state.whose_move) and move != 0:
         return False
     if canBearOff(state):
         return True
     current_list = state.pointLists
-    destination = index + die
+    destination = move + die
     return isOpen(current_list, destination)
 
 
@@ -147,7 +139,7 @@ def availableMoveSet(state, dice):
 
 
 def isOpen(state, location):
-    destination = state.pointLists[location]
+    destination = state.pointLists[location-1]
     if state.whose_move == W:
         return destination[0] != R or len(destination) < 2
     else:
@@ -156,16 +148,19 @@ def isOpen(state, location):
 
 def canBearOff(state):
     checker_position = state.pointLists
-    home_range = homeRange(state)
-    for index in home_range:
-        return checker_position[index][0] != state.whose_move
+    not_home_range = notHomeRange(state)
+    for point in not_home_range:
+        if not checker_position[point-1] or checker_position[point-1][0] == state.whose_move:
+            return False
+    return True
 
-def homeRange(state):
+
+def notHomeRange(state):
     if state.whose_move == W:
-        home_range = range(7, 25)
+        return np.arange(7, 25)
     else:
-        home_range = range(1, 19)
-    return home_range
+        return np.arange(1, 19)
+    
 
 
 
@@ -200,22 +195,3 @@ def staticEval(state):
         wscore *= -1
 
     return rscore + wscore
-
-
-class StateTree:
-
-    def __init__(self, state):
-        self.state = state
-        self.children = []
-
-    def get_children(self):
-        return self.children
-
-    def __add__(self, child):
-        self.children += child
-
-    def del_child(self, index):
-        self.children.pop(index)
-
-    def del_multiple_child(self, start, end):
-        del self.children[start:end]
