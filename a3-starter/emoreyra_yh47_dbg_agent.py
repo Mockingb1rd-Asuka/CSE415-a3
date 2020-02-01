@@ -9,8 +9,6 @@ W = 0
 R = 1
 
 OUR_COLOR = W
-STATE_TREE = None
-
 
 def move(state, die1, die2):
     global OUR_COLOR
@@ -77,12 +75,14 @@ def nextState(oldState, mov, di, endturn):
     return newState
 
 
-def canMove(state, move, die):
-    if OUR_COLOR in state.bar:
+def canMove(state, index, die):
+    if any_on_bar(state, state.whose_move):
         return False
-    currentState = state.pointLists
-    destination = move + die
-    return isOpen(currentState, destination)
+    if canBearOff(state):
+        return True
+    current_list = state.pointLists
+    destination = index + die
+    return isOpen(current_list, destination)
 
 
 def availableMoveSet(state):
@@ -104,6 +104,21 @@ def isOpen(state, location):
         return destination[0] != R or len(destination) < 2
     else:
         return destination[0] != W or len(destination) < 2
+
+
+def canBearOff(state):
+    checker_position = state.pointLists
+    home_range = homeRange(state)
+    for index in home_range:
+        return checker_position[index][0] != state.whose_move
+
+def homeRange(state):
+    if state.whose_move == W:
+        home_range = range(7, 25)
+    else:
+        home_range = range(1, 19)
+    return home_range
+
 
 
 def staticEval(state):
@@ -139,22 +154,6 @@ def staticEval(state):
     return rscore + wscore
 
     pass
-
-
-def buildStateTree(state):
-    global STATE_TREE
-    STATE_TREE = StateTree(state)
-    buildBranch(STATE_TREE, state, 1)
-
-
-def buildBranch(root, state, step):
-    checkers_available = build_dict(state)
-    if checkers_available:
-        for index, checkers in checkers_available.items():
-            new_state = nextState(state, index, step)
-            new_leaf = StateTree(new_state)
-            root.__add__(new_leaf)
-            buildBranch(new_leaf, new_state, 7 - step)  # waiving between 1 and 6
 
 
 class StateTree:
