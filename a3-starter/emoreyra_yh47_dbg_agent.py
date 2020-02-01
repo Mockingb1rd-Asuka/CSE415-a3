@@ -3,6 +3,7 @@
 """
 
 from backgState import *
+from gameMaster import *
 
 W = 0
 R = 1
@@ -85,6 +86,19 @@ def canMove(state, move, die):
     return isOpen(currentState, destination)
 
 
+def availableMoveList(state):
+    moveset_available = {}
+    color = state.whose_move
+    checkers_list = state.pointLists
+    for index, checkers in enumerate(checkers_list):
+        if checkers and checkers[0] == color:
+            if canMove(state, index, 1):
+                moveset_available[1] += [index]
+            if canMove(state, index, 6):
+                moveset_available[6] += [index]
+    return moveset_available
+
+
 def isOpen(state, location):
     destination = state.pointLists[location]
     if state.whose_move == W:
@@ -128,33 +142,20 @@ def staticEval(state):
     pass
 
 
-def buildStateTree(state, color):
+def buildStateTree(state):
     global STATE_TREE
     STATE_TREE = StateTree(state)
-    buildBranch(STATE_TREE, color, state, 1)
+    buildBranch(STATE_TREE, state, 1)
 
 
-def buildBranch(root, color, state, step):
+def buildBranch(root, state, step):
     checkers_available = build_dict(state)
-    if step == 1:
-        color = 1 - color  # changing color
     if checkers_available:
         for index, checkers in checkers_available.items():
-            new_state = nextState(state, index, step, color)
+            new_state = nextState(state, index, step)
             new_leaf = StateTree(new_state)
             root.__add__(new_leaf)
-            buildBranch(new_leaf, color, new_state, 7 - step)  # waiving between 1 and 6
-
-
-def build_dict(state):
-    currentState = state.pointLists
-    stateDict = {}
-    if state.bar:
-        stateDict[0] = [state.bar[0], len(state.bar)]
-    for index, checkers in enumerate(currentState, 1):
-        if checkers:
-            stateDict[index] = [checkers[index][0], len(checkers)]
-    return stateDict
+            buildBranch(new_leaf, new_state, 7 - step)  # waiving between 1 and 6
 
 
 class StateTree:
