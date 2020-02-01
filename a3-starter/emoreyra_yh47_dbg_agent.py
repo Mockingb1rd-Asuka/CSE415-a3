@@ -3,6 +3,7 @@
 """
 
 from backgState import *
+import numpy as np
 
 W = 0
 R = 1
@@ -14,19 +15,51 @@ STATE_TREE = None
 def move(state, die1, die2):
     global OUR_COLOR
     OUR_COLOR = state.whose_move
-    mov1, mov2, r = search()
+    mov1, mov2, r = search(state, [die1, die2])
     res = str(mov1) + "," + str(mov2)
     if r: res.append(",R")
     return res
 
 
-def search():
+def search(state, dice):
     mov1, mov2 = 0
     R = False
     # Search Algorithm
-
+    
+    for i in range(5, 1):
+        minimax(state, {},i)
+    
     return mov1, mov2, R
     
+def minimax(state, depth):
+    if depth == 0: return staticEval(state)
+    if state.whose_move == OUR_COLOR: prov = -1000000
+    else: prov = 1000000
+    succ = successors(state)
+    for s in succ:
+        newVal = minimax(s, [], depth - 1)
+        if ((state.whose_move == OUR_COLOR and newVal > prov) or
+            (state.whose_move != OUR_COLOR and newVal < prov)):
+            prov = newVal
+    return prov
+
+def successors(state):
+    re = []
+    intList = []
+    moves = {}
+    
+    for key in moves.keys():
+        for move in moves.get(key):
+            intList.append((nextState(state, move, key, False), key))
+    
+    for intState in intList:
+        otherRoll = moves.keys().remove(intState[1])
+        moves = {otherRoll}
+        for di in moves.keys():
+            re.append(nextState(intState[0], moves.get(di), di, True))
+    
+    return re
+
 def nextState(oldState, mov, di, endturn):
     # Assumes move is valid
     if (mov in ["P", "p"]): return bgstate(old=oldState)  # passing gives same state
