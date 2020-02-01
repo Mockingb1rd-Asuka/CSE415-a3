@@ -26,7 +26,8 @@ def search(state, dice):
     # Search Algorithm
     succs = successors(state)
     for i in range(5, 1):
-        minimax(state, {},i)
+        for s in succs:
+            minimax(s[0],i)
     
     return mov1, mov2, R
     
@@ -36,7 +37,7 @@ def minimax(state, depth):
     else: prov = 1000000
     succ = successors(state)
     for s in succ:
-        newVal = minimax(s, depth - 1)
+        newVal = minimax(s[0], depth - 1)
         if ((state.whose_move == OUR_COLOR and newVal > prov) or
             (state.whose_move != OUR_COLOR and newVal < prov)):
             prov = newVal
@@ -45,7 +46,7 @@ def minimax(state, depth):
 def successors(state):
     re = []
     intList = []
-    moves = {}
+    moves = availableMoveSet(state, [1, 6])
     
     for key in moves.keys():
         for move in moves.get(key):
@@ -53,9 +54,9 @@ def successors(state):
     
     for intState in intList:
         otherRoll = moves.keys().remove(intState[1])
-        moves = {otherRoll}
+        moves = availableMoveSet(intState, [otherRoll])
         for di in moves.keys():
-            re.append(nextState(intState[0], moves.get(di), di, True))
+            re.append((nextState(intState[0], moves.get(di), di, True), (intState[1], otherRoll)))
     
     return re
 
