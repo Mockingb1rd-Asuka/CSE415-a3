@@ -29,8 +29,9 @@ def search(state, dice):
         minimax(state, {},i)
     
     return mov1, mov2, R
-    
-def minimax(state, depth):
+
+
+def minimax(state, depth, alpha_beta_pair):
     if depth == 0: return staticEval(state)
     if state.whose_move == OUR_COLOR: prov = -1000000
     else: prov = 1000000
@@ -123,6 +124,7 @@ def availableMoveSet(state, dice):
     checkers_list = state.pointLists
     for index, checkers in enumerate(checkers_list, 1):
         for number in dice:
+            moveset_available[number] = []
             if canMove(state, index, number):
                 moveset_available[number] += [index]
     return moveset_available
@@ -131,9 +133,9 @@ def availableMoveSet(state, dice):
 def isOpen(state, location):
     destination = state.pointLists[location]
     if state.whose_move == W:
-        return destination[0] != R or len(destination) < 2
+        return destination[0] != R and len(destination) < 2
     else:
-        return destination[0] != W or len(destination) < 2
+        return destination[0] != W and len(destination) < 2
 
 
 def canBearOff(state):
