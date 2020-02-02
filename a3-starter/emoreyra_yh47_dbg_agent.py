@@ -118,13 +118,14 @@ def canMove(state, index, die):
     checker_list = state.pointLists
     if any_on_bar(state, state.whose_move) and index != 0:
         return False
-    index = 24 - index
     if not checker_list[index]:
         return False
     if checker_list[index][0] != state.whose_move:
         return False
     if canBearOff(state):
-        return True
+        if state.whose_move == W: dest_pt = index + die
+        else: dest_pt = index - die
+        return bear_off(state, index, dest_pt, state.whose_move) != False
     if state.whose_move == W:
         destination = index + die
     else:
@@ -138,7 +139,7 @@ def availableMoveSet(state, dice):
     for number in dice:
         moveset_available[number] = []
         for index, checkers in enumerate(checkers_list, 1):
-            if canMove(state, index, number):
+            if canMove(state, index-1, number):
                 moveset_available[number] += [index]
     return moveset_available
 
