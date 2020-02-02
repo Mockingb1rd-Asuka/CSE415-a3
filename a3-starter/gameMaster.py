@@ -319,7 +319,7 @@ def win_detected(state, who):
   if who==W: return len(state.white_off)==15
   else: return len(state.red_off)==15
 
-run(agent1, agent2, TIME_LIMIT, deterministic=DETERMINISTIC)
+#run(agent1, agent2, TIME_LIMIT, deterministic=DETERMINISTIC)
 # For use in testing:
 #import testStates
 #run(agent1, agent2, TIME_LIMIT, testStates.WHITE_TO_BEAR_OFF, deterministic=DETERMINISTIC)

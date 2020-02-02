@@ -3,8 +3,9 @@
 """
 
 from backgState import *
-#import numpy as np
+import numpy as np
 from gameMaster import *
+import sys
 
 W = 0
 R = 1
@@ -25,17 +26,18 @@ def search(state, dice):
     R = False
     depth = 5
     # Search Algorithm
-    succs = successors(state)
     for i in range(5, 1):
+
         minimax(state, availableMoveSet(state), depth, i)
     
     return mov1, mov2, R
 
 
+
 def minimax(state, moveset, depth, alpbeta_pair):
     if depth == 0: return staticEval(state)
-    if state.whose_move == OUR_COLOR: prov = -1000000
-    else: prov = 1000000
+    if state.whose_move == OUR_COLOR: prov = -sys.maxsize -1
+    else: prov = sys.maxsize
     succ = successors(state)
     for s in succ:
         newVal = minimax(s, depth - 1, alpbeta_pair)
@@ -47,17 +49,19 @@ def minimax(state, moveset, depth, alpbeta_pair):
 def successors(state):
     re = []
     intList = []
-    moves = availableMoveSet(state)
+    moves = availableMoveSet(state, [1, 6])
     
-    for key in moves.keys():
-        for move in moves.get(key):
-            intList.append((nextState(state, move, key, False), key))
+    for di in moves.keys():
+        for move in moves.get(di):
+            intList.append([nextState(state, move, di, False), di, move])
     
     for intState in intList:
         otherRoll = moves.keys().remove(intState[1])
-        moves = {otherRoll}
+        moves = availableMoveSet(intState, [otherRoll])
         for di in moves.keys():
-            re.append(nextState(intState[0], moves.get(di), di, True))
+            for mov in moves.get(di):
+                re.append([nextState(intState[0], moves.get(di), di, True),
+                       (intState[1], otherRoll), (intState[2], mov)])
     
     return re
 
@@ -71,26 +75,26 @@ def nextState(oldState, mov, di, endturn):
     newState = bgstate(old=oldState)
     if (mov != 0):
         # moving from point
-        points[mov - 1].remove(oldState.whose_move)
+        points[mov].remove(oldState.whose_move)
         if (color == W):
             # white's move
-            if (R in points[mov - 1 - di]):
+            if (R in points[mov - di]):
                 # hitting
-                points[mov - 1 - di].remove(R)
+                points[mov - di].remove(R)
                 bar.append(R)
             if mov - 1 - di >= 0:
-                points[mov - 1 - di].append(oldState.whose_move)
+                points[mov - di].append(oldState.whose_move)
             else:  # bearing off
                 woff.append(W)
             newState.whose_move = R
         else:
             # red's move
-            if (W in points[mov - 1 + di]):
+            if (W in points[mov + di]):
                 # hitting
-                points[mov - 1 + di].remove(W)
+                points[mov + di].remove(W)
                 bar.append(W)
-            if mov - 1 + di <= 23:
-                points[mov - 1 + di].append(R)
+            if mov + di <= 23:
+                points[mov + di].append(R)
             else:  # bearing off
                 roff.append(R)
             newState.whose_move = W
@@ -165,6 +169,11 @@ def canBearOff(state):
     return True
 
 
+def notHomeRange(state):
+    if state.whose_move == W:
+        return np.arange(7, 25)
+    else:
+        return np.arange(1, 19)
 
 
 def staticEval(state):
@@ -198,22 +207,3 @@ def staticEval(state):
         wscore *= -1
 
     return rscore + wscore
-
-
-class StateTree:
-
-    def __init__(self, state):
-        self.state = state
-        self.children = []
-
-    def get_children(self):
-        return self.children
-
-    def __add__(self, child):
-        self.children += child
-
-    def del_child(self, index):
-        self.children.pop(index)
-
-    def del_multiple_child(self, start, end):
-        del self.children[start:end]
