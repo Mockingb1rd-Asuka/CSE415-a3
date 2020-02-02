@@ -163,13 +163,6 @@ def canBearOff(state):
     return True
 
 
-def notHomeRange(state):
-    if state.whose_move == W:
-        return np.arange(7, 25)
-    else:
-        return np.arange(1, 19)
-
-
 def staticEval(state):
     bar = state.bar
     points = state.pointLists
