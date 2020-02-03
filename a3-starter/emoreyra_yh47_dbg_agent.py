@@ -33,8 +33,8 @@ def search(state, dice):
     succ = successors(state)
     vals = []
     for i in range(1, depth):
+        vals = []
         for s in succ:
-            print(i)
             vals.append(minimax(s, i, -sys.maxsize - 1, sys.maxsize))
     
     succ_sel = vals.index(max(vals))
@@ -56,9 +56,7 @@ def minimax(state, depth, alpha, beta):
         prov = sys.maxsize
     succ = successors(state[0])
     for s in succ:
-        print(s)
         newVal = minimax(s, depth - 1, alpha, beta)
-        print(newVal)
         if ((state[0].whose_move == OUR_COLOR and newVal > prov) or
                 (state[0].whose_move != OUR_COLOR and newVal < prov)):
             prov = newVal
@@ -90,7 +88,6 @@ def successors(state):
                             re.append(the_successor)
         else:
             re.append([intState[0], (), (intState[2])])
-        print(re[-1])
     return re
 
 

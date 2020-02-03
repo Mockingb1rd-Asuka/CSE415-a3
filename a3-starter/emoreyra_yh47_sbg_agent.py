@@ -33,8 +33,8 @@ def search(state, dice):
     succ = successors(state, dice)
     vals = []
     for i in range(1, depth):
+        vals = []
         for s in succ:
-            print(i)
             vals.append(expectimax(s, i, -sys.maxsize - 1, sys.maxsize))
     
     succ_sel = vals.index(max(vals))
@@ -92,7 +92,6 @@ def successors(state, dice):
                             re.append(the_successor)
         else:
             re.append([intState[0], (), (intState[2])])
-        print(re[-1])
     return re
 
 
