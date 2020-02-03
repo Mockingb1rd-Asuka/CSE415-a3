@@ -3,7 +3,6 @@
 """
 
 from backgState import *
-# import numpy as np
 from gameMaster import *
 import sys
 
@@ -17,34 +16,51 @@ def move(state, die1, die2):
     global OUR_COLOR
     OUR_COLOR = state.whose_move
     mov1, mov2, r = search(state, [die1, die2])
-    res = str(mov1) + "," + str(mov2)
+    res = str(mov1)
+    if (mov2 != -1): res += "," + str(mov2)
     if r: res += ",R"
     return res
 
 
 def search(state, dice):
-    mov1, mov2 = 0
+    mov1 = 0
+    mov2 = 0
     R = False
-    depth = 5
+    depth = 2
     # Search Algorithm
-    for i in range(5, 1):
-        minimax(state, availableMoveSet(state), depth, i)
-
+    succ = successors(state)
+    vals = []
+    for i in range(1, depth):
+        for s in succ:
+            print(i)
+            vals.append(minimax(s, i, -sys.maxsize - 1, sys.maxsize))
+    
+    succ_sel = vals.index(max(vals))
+    pick = succ[succ_sel]
+    if (len(pick[1]) != 0):
+        R = pick[1][0] != dice[0]
+    mov1 = pick[2][0]
+    if (len(pick[2]) < 2): mov2 = -1 #this move is not used in this case
+    else: mov2 = pick[2][1]
+        
     return mov1, mov2, R
 
 
-def minimax(state, depth, alpbeta_pair):
-    if depth == 0: return staticEval(state)
-    if state.whose_move == OUR_COLOR:
+def minimax(state, depth, alpha, beta):
+    if depth == 0: return staticEval(state[0])
+    if state[0].whose_move == OUR_COLOR:
         prov = -sys.maxsize - 1
     else:
         prov = sys.maxsize
-    succ = successors(state)
+    succ = successors(state[0])
     for s in succ:
-        newVal = minimax(s, depth - 1, alpbeta_pair)
-        if ((state.whose_move == OUR_COLOR and newVal > prov) or
-                (state.whose_move != OUR_COLOR and newVal < prov)):
+        print(s)
+        newVal = minimax(s, depth - 1, alpha, beta)
+        print(newVal)
+        if ((state[0].whose_move == OUR_COLOR and newVal > prov) or
+                (state[0].whose_move != OUR_COLOR and newVal < prov)):
             prov = newVal
+            
     return prov
 
 
@@ -58,30 +74,34 @@ def successors(state):
             intList.append([nextState(state, m, di, False), di, m])
 
     for intState in intList:
-        #print(intState)
-        for roll in moves.keys():
-            if roll != intState[1]:
-                otherRoll = roll
-        #print(otherRoll)
-        int_moves = availableMoveSet(intState[0], [otherRoll])
-        for di in int_moves.keys():
-            for mov in int_moves.get(di):
-                if canMove(intState[0], mov, di):
-                    the_successor = [nextState(intState[0], mov, di, True),
-                                     (intState[1], otherRoll), (intState[2], mov)]
-                    if the_successor not in re:
-                        re.append(the_successor)
+        if (intState[2] not in ["P", "p"]):
+            for roll in moves.keys():
+                if roll != intState[1]:
+                    otherRoll = roll
+            int_moves = availableMoveSet(intState[0], [otherRoll])
+            for di in int_moves.keys():
+                for mov in int_moves.get(di):
+                    if canMove(intState[0], mov, di):
+                        the_successor = [nextState(intState[0], mov, di, True),
+                                         (intState[1], otherRoll), (intState[2], mov)]
+                        if the_successor not in re:
+                            re.append(the_successor)
+        else:
+            re.append([intState[0], (), (intState[2])])
+        print(re[-1])
     return re
 
 
 def nextState(oldState, mov, di, endturn):
     # Assumes move is valid
-    if (mov in ["P", "p"]): return bgstate(old=oldState)  # passing gives same state
     newState = bgstate(old=oldState)
+    if (mov in ["P", "p"]): 
+        newState.whose_move = 1 - newState.whose_move
+        return newState  # passing gives same state
     
     if (mov != 0):
         # moving from point
-        mov -= 1
+        mov = mov - 1
         newState.pointLists[mov].remove(oldState.whose_move)
         if (oldState.whose_move == W):
             # white's move
@@ -93,7 +113,6 @@ def nextState(oldState, mov, di, endturn):
                 newState.pointLists[mov + di].append(oldState.whose_move)
             else:  # bearing off
                 newState.white_off.append(W)
-            newState.whose_move = R
         else:
             # red's move
             if (W in newState.pointLists[mov - di]):
@@ -104,20 +123,20 @@ def nextState(oldState, mov, di, endturn):
                 newState.pointLists[mov - di].append(R)
             else:  # bearing off
                 newState.white_off.append(R)
-            newState.whose_move = W
     else:
         # Remove from bar
         bar.remove(oldState.whose_move)
 
     if (endturn):
-        if (oldState.whose_move == W): newState.whose_move = R
-        else: newState.whose_move = W
+        newState.whose_move = 1 - newState.whose_move
 
     return newState
 
 
 def canMove(state, index, die):
+    if (index in ["P", "p"]): return True
     checker_list = state.pointLists
+    index -= 1
     if any_on_bar(state, state.whose_move) and index != 0:
         return False
     if not checker_list[index]:
@@ -139,10 +158,10 @@ def availableMoveSet(state, dice):
     moveset_available = {}
     checkers_list = state.pointLists
     for number in dice:
-        moveset_available[number] = []
-        for index, checkers in enumerate(checkers_list, 1):
+        moveset_available[number] = ["p"]
+        for index, checkers in enumerate(checkers_list, 0):
             if canMove(state, index-1, number):
-                moveset_available[number] += [index]
+                moveset_available[number] += [index-1]
     return moveset_available
 
 
@@ -182,8 +201,8 @@ def staticEval(state):
     wcount = 0
 
     for i, val in enumerate(points, 1):
-        wscore += val.count(W) * (24 - i)
-        rscore += val.count(R) * (i)
+        wscore += val.count(W) * (i)
+        rscore += val.count(R) * (24 - i)
         wcount += val.count(W)
         rcount += val.count(R)
 

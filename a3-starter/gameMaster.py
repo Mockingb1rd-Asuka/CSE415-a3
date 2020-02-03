@@ -59,10 +59,10 @@ If this happens, the game is terminated and declared to be a tie.
 
 '''
 
-import BackMan as agent1
+import emoreyra_yh47_dbg_agent as agent1
 #import McGammon as agent2
 import BackMan as agent2
-TIME_LIMIT=3.0 # 2 seconds.
+TIME_LIMIT=2000.0 # 2 seconds.
 
 DETERMINISTIC = True
 # for the deterministic version, where the dice are loaded in a way
@@ -319,7 +319,7 @@ def win_detected(state, who):
   if who==W: return len(state.white_off)==15
   else: return len(state.red_off)==15
 
-#run(agent1, agent2, TIME_LIMIT, deterministic=DETERMINISTIC)
+run(agent1, agent2, TIME_LIMIT, deterministic=DETERMINISTIC)
 # For use in testing:
 #import testStates
 #run(agent1, agent2, TIME_LIMIT, testStates.WHITE_TO_BEAR_OFF, deterministic=DETERMINISTIC)
