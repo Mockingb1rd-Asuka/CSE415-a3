@@ -3,7 +3,7 @@
 """
 
 from backgState import *
-import numpy as np
+# import numpy as np
 from gameMaster import *
 import sys
 
@@ -11,6 +11,7 @@ W = 0
 R = 1
 
 OUR_COLOR = W
+
 
 def move(state, die1, die2):
     global OUR_COLOR
@@ -27,43 +28,51 @@ def search(state, dice):
     depth = 5
     # Search Algorithm
     for i in range(5, 1):
-
         minimax(state, availableMoveSet(state), depth, i)
-    
+
     return mov1, mov2, R
 
 
-
-def minimax(state, moveset, depth, alpbeta_pair):
+def minimax(state, depth, alpbeta_pair):
     if depth == 0: return staticEval(state)
-    if state.whose_move == OUR_COLOR: prov = -sys.maxsize -1
-    else: prov = sys.maxsize
+    if state.whose_move == OUR_COLOR:
+        prov = -sys.maxsize - 1
+    else:
+        prov = sys.maxsize
     succ = successors(state)
     for s in succ:
         newVal = minimax(s, depth - 1, alpbeta_pair)
         if ((state.whose_move == OUR_COLOR and newVal > prov) or
-            (state.whose_move != OUR_COLOR and newVal < prov)):
+                (state.whose_move != OUR_COLOR and newVal < prov)):
             prov = newVal
     return prov
+
 
 def successors(state):
     re = []
     intList = []
     moves = availableMoveSet(state, [1, 6])
-    
+
     for di in moves.keys():
-        for move in moves.get(di):
-            intList.append([nextState(state, move, di, False), di, move])
-    
+        for m in moves.get(di):
+            intList.append([nextState(state, m, di, False), di, m])
+
     for intState in intList:
-        otherRoll = moves.keys().remove(intState[1])
-        moves = availableMoveSet(intState, [otherRoll])
-        for di in moves.keys():
-            for mov in moves.get(di):
-                re.append([nextState(intState[0], moves.get(di), di, True),
-                       (intState[1], otherRoll), (intState[2], mov)])
-    
+        #print(intState)
+        for roll in moves.keys():
+            if roll != intState[1]:
+                otherRoll = roll
+        #print(otherRoll)
+        int_moves = availableMoveSet(intState[0], [otherRoll])
+        for di in int_moves.keys():
+            for mov in int_moves.get(di):
+                if canMove(intState[0], mov, di):
+                    the_successor = [nextState(intState[0], mov, di, True),
+                                     (intState[1], otherRoll), (intState[2], mov)]
+                    if the_successor not in re:
+                        re.append(the_successor)
     return re
+
 
 def nextState(oldState, mov, di, endturn):
     # Assumes move is valid
@@ -99,7 +108,7 @@ def nextState(oldState, mov, di, endturn):
     else:
         # Remove from bar
         bar.remove(oldState.whose_move)
-        
+
     if (endturn):
         if (oldState.whose_move == W): newState.whose_move = R
         else: newState.whose_move = W
@@ -141,7 +150,6 @@ def isOpen(state, location):
     checker_lists = state.pointLists
     if location >= len(checker_lists) or location < 0:
         return False
-    print(location)
     destination = checker_lists[location]
     if not destination:
         return True
