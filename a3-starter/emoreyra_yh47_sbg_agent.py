@@ -1,5 +1,5 @@
 '''
-emoreyra_yh47_dbg_agent.py
+emoreyra_yh47_sbg_agent.py
 CSE 415, Winter 2020, Assignment 3
 Emela Moreyra, jerry Hong
 '''
@@ -30,12 +30,12 @@ def search(state, dice):
     R = False
     depth = 2
     # Search Algorithm
-    succ = successors(state)
+    succ = successors(state, dice)
     vals = []
     for i in range(1, depth):
         for s in succ:
             print(i)
-            vals.append(minimax(s, i, -sys.maxsize - 1, sys.maxsize))
+            vals.append(expectimax(s, i, -sys.maxsize - 1, sys.maxsize))
     
     succ_sel = vals.index(max(vals))
     pick = succ[succ_sel]
@@ -48,28 +48,30 @@ def search(state, dice):
     return mov1, mov2, R
 
 
-def minimax(state, depth, alpha, beta):
+def expectimax(state, depth, alpha, beta):
     if depth == 0: return staticEval(state[0])
     if state[0].whose_move == OUR_COLOR:
         prov = -sys.maxsize - 1
     else:
         prov = sys.maxsize
-    succ = successors(state[0])
-    for s in succ:
-        print(s)
-        newVal = minimax(s, depth - 1, alpha, beta)
-        print(newVal)
-        if ((state[0].whose_move == OUR_COLOR and newVal > prov) or
-                (state[0].whose_move != OUR_COLOR and newVal < prov)):
-            prov = newVal
-            
-    return prov
+        
+    expect = 0
+    for i in range(1, 7):
+        for j in range(1, 7):
+            succ = successors(state[0], [i, j])
+            for s in succ:
+                newVal = minimax(s, depth - 1, alpha, beta)
+                if ((state[0].whose_move == OUR_COLOR and newVal > prov) or
+                        (state[0].whose_move != OUR_COLOR and newVal < prov)):
+                    prov = newVal
+            expect += prov
+    return expect / 36
 
 
-def successors(state):
+def successors(state, dice):
     re = []
     intList = []
-    moves = availableMoveSet(state, [1, 6])
+    moves = availableMoveSet(state, dice)
 
     for di in moves.keys():
         for m in moves.get(di):
