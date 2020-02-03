@@ -68,48 +68,41 @@ def successors(state):
 def nextState(oldState, mov, di, endturn):
     # Assumes move is valid
     if (mov in ["P", "p"]): return bgstate(old=oldState)  # passing gives same state
-    bar = oldState.bar.copy()
-    points = oldState.pointLists.copy()
-    roff = oldState.red_off.copy()
-    woff = oldState.white_off.copy()
     newState = bgstate(old=oldState)
+    
     if (mov != 0):
         # moving from point
-        points[mov].remove(oldState.whose_move)
-        if (color == W):
+        mov -= 1
+        newState.pointLists[mov].remove(oldState.whose_move)
+        if (oldState.whose_move == W):
             # white's move
-            if (R in points[mov - di]):
+            if (R in newState.pointLists[mov + di]):
                 # hitting
-                points[mov - di].remove(R)
-                bar.append(R)
-            if mov - 1 - di >= 0:
-                points[mov - di].append(oldState.whose_move)
+                newState.pointLists[mov + di].remove(R)
+                newState.bar.append(R)
+            if mov + di <= 23:
+                newState.pointLists[mov + di].append(oldState.whose_move)
             else:  # bearing off
-                woff.append(W)
+                newState.white_off.append(W)
             newState.whose_move = R
         else:
             # red's move
-            if (W in points[mov + di]):
+            if (W in newState.pointLists[mov - di]):
                 # hitting
-                points[mov + di].remove(W)
-                bar.append(W)
-            if mov + di <= 23:
-                points[mov + di].append(R)
+                newState.pointLists[mov - di].remove(W)
+                newState.bar.append(W)
+            if mov - di >= 0:
+                newState.pointLists[mov - di].append(R)
             else:  # bearing off
-                roff.append(R)
+                newState.white_off.append(R)
             newState.whose_move = W
     else:
         # Remove from bar
         bar.remove(oldState.whose_move)
         
     if (endturn):
-        if (oldState.whose_move == W): points[di-1].append(W)
-        else: points[24-di].append(R)
-
-    newState.white_off = woff
-    newState.red_off = roff
-    newState.bar = bar
-    newState.pointLists = points
+        if (oldState.whose_move == W): newState.whose_move = R
+        else: newState.whose_move = W
 
     return newState
 
