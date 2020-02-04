@@ -1,7 +1,8 @@
 '''
 emoreyra_yh47_dbg_agent.py
 CSE 415, Winter 2020, Assignment 3
-Emela Moreyra, jerry Hong
+Emela Moreyra - emoreyra
+jerry Hong - yh47
 '''
 
 from backgState import *
