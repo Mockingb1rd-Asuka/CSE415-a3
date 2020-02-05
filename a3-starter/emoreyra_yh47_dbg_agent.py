@@ -14,6 +14,8 @@ R = 1
 
 OUR_COLOR = W
 
+prune_count = 0
+
 
 def move(state, die1, die2):
     global OUR_COLOR
@@ -50,6 +52,7 @@ def search(state, dice):
 
 
 def minimax(state, depth, alpha, beta):
+    global prune_count
     if depth == 0: return staticEval(state[0])
     if state[0].whose_move == OUR_COLOR:
         prov = -sys.maxsize - 1
@@ -58,10 +61,17 @@ def minimax(state, depth, alpha, beta):
     succ = successors(state[0])
     for s in succ:
         newVal = minimax(s, depth - 1, alpha, beta)
-        if ((state[0].whose_move == OUR_COLOR and newVal > prov) or
-                (state[0].whose_move != OUR_COLOR and newVal < prov)):
-            prov = newVal
-            
+        if state[0].whose_move == OUR_COLOR:
+            if newVal > prov:
+                prov = newVal
+                alpha = newVal
+        else:
+            if newVal < prov:
+                prov = newVal
+                beta = newVal
+        if alpha >= beta:
+            prune_count += 1
+            break
     return prov
 
 
