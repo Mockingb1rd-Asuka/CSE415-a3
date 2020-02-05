@@ -6,7 +6,6 @@ jerry Hong - yh47
 '''
 
 from backgState import *
-from gameMaster import *
 import sys
 
 W = 0
@@ -61,16 +60,17 @@ def minimax(state, depth, alpha, beta):
     succ = successors(state[0])
     for s in succ:
         newVal = minimax(s, depth - 1, alpha, beta)
-        if state[0].whose_move == OUR_COLOR:
-            if newVal > prov:
-                prov = newVal
-                alpha = newVal
-        else:
-            if newVal < prov:
-                prov = newVal
-                beta = newVal
+        if state[0].whose_move == OUR_COLOR and newVal > prov:
+            prov = newVal
+            alpha = newVal
+            print("new_alpha:" + str(alpha))
+        elif state[0].whose_move != OUR_COLOR and newVal < prov:
+            prov = newVal
+            beta = newVal
+            #print("new_beta:" + str(beta))
         if alpha >= beta:
             prune_count += 1
+            print("prune_num" + str(prune_count))
             break
     return prov
 
@@ -147,7 +147,7 @@ def canMove(state, index, die):
     if (index in ["P", "p"]): return True
     checker_list = state.pointLists
     index -= 1
-    if any_on_bar(state, state.whose_move) and index != 0:
+    if state.whose_move in state.bar and index != 0:
         return False
     if not checker_list[index]:
         return False
@@ -231,3 +231,44 @@ def staticEval(state):
         wscore *= -1
 
     return rscore + wscore
+
+
+
+
+def bear_off(state, src_pt, dest_pt, who):
+  # Return False if 'who' is not allowed to bear off this way.
+  # Otherwise, create the new state showing the result of bearing
+  # this one checker off, and return the new state.
+
+  # First of all, is bearing off allowed, regardless of the dice roll?
+  if not bearing_off_allowed(state, who): return False
+  # Direct bear-off, if possible:
+  pl = state.pointLists[src_pt-1]
+  if pl==[] or pl[0]!=who:
+    print("Cannot bear off from point "+src(src_pt))
+    return False
+  # So there is a checker to possibly bear off.
+  # If it does not go exactly off, then there must be
+  # no pieces of the same color behind it, and dest
+  # can only be one further away.
+  good = False
+  if who==W:
+    if dest_pt==25:
+       good = True
+    elif dest_pt==26:
+       for point in range(18,src_pt-1):
+         if W in state.pointLists[point]: return False
+       good = True
+  elif who==R:
+    if dest_pt==0:
+       good = True
+    elif dest_pt== -1:
+       for point in range(src_pt, 6):
+         if R in state.pointLists[point]: return False
+       good = True
+  if not good: return False
+  born_off_state = bgstate(state)
+  born_off_state.pointLists[src_pt-1].pop()
+  if who==W: born_off_state.white_off.append(W)
+  else:  born_off_state.red_off.append(R)
+  return born_off_state

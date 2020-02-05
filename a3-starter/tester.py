@@ -8,6 +8,9 @@ moveset = availableMoveSet(state, [1, 6])
 
 succ_list = successors(state)
 #print(succ_list)
-for succ in succ_list:
-    print(succ[0].prettyPrint())
+#or succ in succ_list:
+    #print(succ[0].prettyPrint())
 #print(canMove(state, 6, 1), 6, 1)
+
+search(state, [1, 6])
+print()
