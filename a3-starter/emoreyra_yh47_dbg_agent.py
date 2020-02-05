@@ -30,7 +30,7 @@ def search(state, dice):
     mov1 = 0
     mov2 = 0
     R = False
-    depth = 2
+    depth = 5
     # Search Algorithm
     succ = successors(state)
     vals = []
@@ -59,11 +59,12 @@ def minimax(state, depth, alpha, beta):
         prov = sys.maxsize
     succ = successors(state[0])
     for s in succ:
+        #print(str(depth))
         newVal = minimax(s, depth - 1, alpha, beta)
         if state[0].whose_move == OUR_COLOR and newVal > prov:
             prov = newVal
             alpha = newVal
-            print("new_alpha:" + str(alpha))
+            #print("new_alpha:" + str(alpha))
         elif state[0].whose_move != OUR_COLOR and newVal < prov:
             prov = newVal
             beta = newVal
